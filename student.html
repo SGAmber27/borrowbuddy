@@ -1313,6 +1313,9 @@
 <div class="welcome-banner">
   <h1><i class="fas fa-graduation-cap"></i> Student Dashboard</h1>
   <p>Explore available items and manage your borrow requests</p>
+  <div class="user-greeting">
+    Welcome, <strong id="userGreeting">Guest</strong>! 📚
+  </div>
   <div id="notification" class="notification" aria-live="polite" role="alert"></div>
 </div>
 
@@ -1513,11 +1516,9 @@
 </footer>
 
 <script>
-
-let items = [];
-let requests = [];
-let currentUser = { username: "Guest", email: "guest@demo.com", firstName: "Guest", role: "student" };
-
+  let items = JSON.parse(localStorage.getItem("items")) || [];
+  let requests = JSON.parse(localStorage.getItem("requests")) || [];
+  let currentUser = JSON.parse(localStorage.getItem("loggedInUser")) || { username: "Guest", email: "guest@demo.com", firstName: "Guest", role: "student" };
   let currentCategory = 'all';
   
   const studentEmail = currentUser?.email || "guest@demo.com";
@@ -1639,9 +1640,9 @@ let currentUser = { username: "Guest", email: "guest@demo.com", firstName: "Gues
       }
     });
     
-    // Items loaded from Supabase via utils.js
+    items = defaultBooks;
+    localStorage.setItem("items", JSON.stringify(items));
   }
-
 
   // Filter by category function
   function filterByCategory(category) {
@@ -1689,8 +1690,16 @@ let currentUser = { username: "Guest", email: "guest@demo.com", firstName: "Gues
   }
 
   // Safe data storage
-// saveData() removed - Supabase async CRUD handles all persistence
-// All data operations now use getRequestsAsync(), addRequestAsync(), etc. from utils.js
+  function saveData() {
+    try {
+      localStorage.setItem("requests", JSON.stringify(requests));
+      return true;
+    } catch (e) {
+      showNotification('Error saving data. Please try again.', 'error');
+      console.error('Storage error:', e);
+      return false;
+    }
+  }
 
   function getStatusIcon(status) {
     const icons = {
@@ -1927,14 +1936,14 @@ let currentUser = { username: "Guest", email: "guest@demo.com", firstName: "Gues
         requestDate: new Date().toLocaleString()
       });
 
-      // Supabase persistence via student.js - addRequestAsync() called on load
+      try { localStorage.setItem('requests', JSON.stringify(requests)); } catch (e) { console.error('Could not save requests', e); }
+
       document.getElementById('requestModal').style.display = 'none';
       showNotification(`✓ Request sent for "${name}"`);
       showItems();
       showRequests();
       updateRequestStats();
       requestForm.reset();
-
     });
   }
 
@@ -2034,15 +2043,6 @@ let currentUser = { username: "Guest", email: "guest@demo.com", firstName: "Gues
   updateRequestStats();
   showItems();
   showRequests();
-</script>
-<script src="utils.js"></script>
-<script src="student.html"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script>
-const supabase = window.supabase.createClient(
-  "https://merrdzfabaujzkuxkhob.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lcnJkemZhYmF1anprdXhraG9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NDc1NDUsImV4cCI6MjA4OTIyMzU0NX0.YsS_jB6qz3EIijiRoLL1tbjYEGG8XDDItHEzi4-Cx9Y"
-);
 </script>
 
 </body>

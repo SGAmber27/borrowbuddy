@@ -53,7 +53,7 @@
       </button>
     </form>
 
-
+    <p class="demo-note">Already have an account? <a href="login.html">Log in</a></p>
   </div>
 
   <script>
@@ -81,7 +81,7 @@
   });
 
   // === SIGN UP FUNCTION ===
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const firstName = document.getElementById("firstName").value.trim();
@@ -102,42 +102,53 @@
       return;
     }
 
-await window.initSupabase();
+    let users = JSON.parse(localStorage.getItem("users")) || [];
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            firstName,
-            lastName,
-            phone: phone || null,
-            role: currentRole
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      // Upsert profile
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
-        firstName,
-        lastName,
-        email,
-        phone: phone || null,
-        role: currentRole,
-        updated_at: new Date().toISOString()
-      });
-
-      showNotification('Account created! Check your email to verify.', 'success');
-      setTimeout(() => {
-        window.location.href = "login.html";
-      }, 2000);
-    } catch (error) {
-      alert(`Signup failed: ${error.message}`);
+    // Check for duplicate username (case-insensitive)
+    if (users.some((u) => u.username.toLowerCase() === username.toLowerCase())) {
+      alert("Username already exists! Please choose a different username.");
+      return;
     }
+
+    // Check for duplicate email (case-insensitive)
+    if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
+      alert("Email already registered! Please use a different email or log in.");
+      return;
+    }
+
+    // Create and store new user with complete profile
+    const newUser = { 
+      userId: Date.now().toString(), // Unique ID
+      firstName,
+      lastName,
+      username, 
+      email, 
+      phone: phone || "Not provided",
+      password, 
+      role: currentRole,
+      isActive: true,
+      createdAt: new Date().toLocaleString(),
+      lastLogin: null,
+      passwordChangedAt: null,
+      profile: {
+        avatar: null,
+        bio: "",
+        preferences: {
+          notifications: true,
+          darkMode: false
+        }
+      },
+      borrowHistory: [],
+      accountSettings: {
+        twoFactorEnabled: false,
+        emailVerified: false
+      }
+    };
+    users.push(newUser);
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert(`Account created successfully as ${currentRole.toUpperCase()}! You can now log in.`);
+    window.location.href = "login.html";
   });
 </script>
 

@@ -968,6 +968,9 @@
     <a href="index.html" class="nav-link" title="Go to home page">
       <i class="fas fa-home"></i> Home
     </a>
+    <a href="admin-profile.html" class="nav-link" title="View and edit your admin profile">
+      <i class="fas fa-user"></i> My Profile
+    </a>
     <button onclick="resetSystem()" class="nav-link reset" title="Reset system and clear all data">
       <i class="fas fa-refresh"></i> Reset System
     </button>
@@ -1436,9 +1439,6 @@
   <p>© 2026 Kyle & Borrow Buddy. All Rights Reserved.</p>
 </footer>
 
-
-<script src="js/utils.js"></script>
-
 <script>
   // Tab switching function
   function switchAdminTab(tabName) {
@@ -1457,10 +1457,113 @@
     }
   }
 
+  let items = JSON.parse(localStorage.getItem("items")) || [];
+  let requests = JSON.parse(localStorage.getItem("requests")) || [];
+  let users = JSON.parse(localStorage.getItem("users")) || [];
 
 
-
-
+  // Initialize default books if library is empty - School-related books
+  if (items.length === 0) {
+    const categoryColors = {
+      "Mathematics": "2c3e50",
+      "English": "8e44ad",
+      "Science": "27ae60",
+      "ICT": "2980b9",
+      "AP": "e74c3c",
+      "Story": "e91e63",
+      "Sci-Fi": "00bcd4",
+      "Fiction": "ff9800",
+      "Non-Fiction": "795548"
+    };
+    
+    const getBookImage = (name, category) => {
+      const color = categoryColors[category] || "667eea";
+      const text = encodeURIComponent(name.substring(0, 18));
+      return `https://placehold.co/300x400/${color}/white?text=${text}`;
+    };
+    
+    const defaultBooks = [
+      // Grade 7 - Mathematics
+      { code: "MTH7-01", name: "Mathematics 7", author: "Pearson Education", category: "Mathematics", status: "Available", description: "Comprehensive mathematics textbook for Grade 7 covering algebra, geometry, and statistics.", publisher: "Pearson", isbn: "978-0134685991", grade: 7, image: getBookImage("Mathematics 7", "Mathematics") },
+      // Grade 7 - English
+      { code: "ENG7-01", name: "English 7", author: "Houghton Mifflin", category: "English", status: "Available", description: "English textbook for Grade 7 focusing on reading, writing, and grammar.", publisher: "Houghton Mifflin", isbn: "978-0357123795", grade: 7, image: getBookImage("English 7", "English") },
+      // Grade 7 - Science
+      { code: "SCI7-01", name: "Science 7", author: "National Geographic", category: "Science", status: "Available", description: "Grade 7 science textbook covering life science, physical science, and earth science.", publisher: "National Geographic", isbn: "978-0328931540", grade: 7, image: getBookImage("Science 7", "Science") },
+      
+      // Grade 8 - Mathematics
+      { code: "MTH8-01", name: "Mathematics 8", author: "Pearson Education", category: "Mathematics", status: "Available", description: "Advanced mathematics for Grade 8 including pre-algebra and geometry.", publisher: "Pearson", isbn: "978-0134686004", grade: 8, image: getBookImage("Mathematics 8", "Mathematics") },
+      // Grade 8 - English
+      { code: "ENG8-01", name: "English 8", author: "Houghton Mifflin", category: "English", status: "Available", description: "Grade 8 English with literature analysis and essay writing.", publisher: "Houghton Mifflin", isbn: "978-0357123801", grade: 8, image: getBookImage("English 8", "English") },
+      // Grade 8 - Science
+      { code: "SCI8-01", name: "Science 8", author: "National Geographic", category: "Science", status: "Available", description: "Grade 8 science covering physics, chemistry, and biology foundations.", publisher: "National Geographic", isbn: "978-0328931557", grade: 8, image: getBookImage("Science 8", "Science") },
+      
+      // Grade 9 - Mathematics
+      { code: "MTH9-01", name: "Algebra I", author: "McGraw Hill", category: "Mathematics", status: "Available", description: "Algebra I textbook for Grade 9 students.", publisher: "McGraw Hill", isbn: "978-0079039898", grade: 9, image: getBookImage("Algebra I", "Mathematics") },
+      // Grade 9 - English
+      { code: "ENG9-01", name: "English I", author: "Prentice Hall", category: "English", status: "Available", description: "Grade 9 English focusing on literature and composition.", publisher: "Prentice Hall", isbn: "978-0133328360", grade: 9, image: getBookImage("English I", "English") },
+      // Grade 9 - Science
+      { code: "BIO9-01", name: "Biology", author: "Pearson", category: "Science", status: "Available", description: "Introduction to biology for Grade 9 students.", publisher: "Pearson", isbn: "978-0134093413", grade: 9, image: getBookImage("Biology", "Science") },
+      // Grade 9 - ICT
+      { code: "ICT9-01", name: "Digital Literacy", author: "Course Technology", category: "ICT", status: "Available", description: "Introduction to computer fundamentals and digital literacy.", publisher: "Cengage", isbn: "978-1305503076", grade: 9, image: getBookImage("Digital Literacy", "ICT") },
+      
+      // Grade 10 - Mathematics
+      { code: "MTH10-01", name: "Geometry", author: "McGraw Hill", category: "Mathematics", status: "Available", description: "Geometry textbook for Grade 10 students.", publisher: "McGraw Hill", isbn: "978-0079039942", grade: 10, image: getBookImage("Geometry", "Mathematics") },
+      // Grade 10 - English
+      { code: "ENG10-01", name: "English II", author: "Prentice Hall", category: "English", status: "Available", description: "Grade 10 English with world literature.", publisher: "Prentice Hall", isbn: "978-0133328377", grade: 10, image: getBookImage("English II", "English") },
+      // Grade 10 - Science
+      { code: "CHEM10-01", name: "Chemistry", author: "Pearson", category: "Science", status: "Available", description: "Introduction to chemistry for Grade 10.", publisher: "Pearson", isbn: "978-0134414232", grade: 10, image: getBookImage("Chemistry", "Science") },
+      // Grade 10 - ICT
+      { code: "ICT10-01", name: "Computer Science", author: "Pearson", category: "ICT", status: "Available", description: "Computer science basics and programming introduction.", publisher: "Pearson", isbn: "978-0134670943", grade: 10, image: getBookImage("Computer Science", "ICT") },
+      
+      // Grade 11 - Mathematics
+      { code: "MTH11-01", name: "Algebra II", author: "McGraw Hill", category: "Mathematics", status: "Available", description: "Advanced Algebra for Grade 11.", publisher: "McGraw Hill", isbn: "978-0079039959", grade: 11, image: getBookImage("Algebra II", "Mathematics") },
+      // Grade 11 - English
+      { code: "ENG11-01", name: "English III", author: "Prentice Hall", category: "English", status: "Available", description: "American literature for Grade 11.", publisher: "Prentice Hall", isbn: "978-0133328384", grade: 11, image: getBookImage("English III", "English") },
+      // Grade 11 - Science
+      { code: "PHY11-01", name: "Physics", author: "Pearson", category: "Science", status: "Available", description: "Physics fundamentals for Grade 11.", publisher: "Pearson", isbn: "978-0134414447", grade: 11, image: getBookImage("Physics", "Science") },
+      // Grade 11 - AP
+      { code: "AP11-01", name: "AP World History", author: "Bedford Freeman", category: "AP", status: "Available", description: "Advanced Placement World History.", publisher: "Bedford Freeman", isbn: "978-1319038736", grade: 11, image: getBookImage("AP World History", "AP") },
+      
+      // Grade 12 - Mathematics
+      { code: "MTH12-01", name: "Pre-Calculus", author: "McGraw Hill", category: "Mathematics", status: "Available", description: "Pre-calculus mathematics for Grade 12.", publisher: "McGraw Hill", isbn: "978-0079039966", grade: 12, image: getBookImage("Pre-Calculus", "Mathematics") },
+      // Grade 12 - English
+      { code: "ENG12-01", name: "English IV", author: "Prentice Hall", category: "English", status: "Available", description: "British literature for Grade 12.", publisher: "Prentice Hall", isbn: "978-0133328391", grade: 12, image: getBookImage("English IV", "English") },
+      // Grade 12 - AP
+      { code: "AP12-01", name: "AP Calculus AB", author: "Pearson", category: "AP", status: "Available", description: "Advanced Placement Calculus AB.", publisher: "Pearson", isbn: "978-0134463214", grade: 12, image: getBookImage("AP Calculus AB", "AP") },
+      // Grade 12 - AP
+      { code: "AP12-02", name: "AP English Lit", author: "College Board", category: "AP", status: "Available", description: "Advanced Placement English Literature.", publisher: "College Board", isbn: "978-1457671656", grade: 12, image: getBookImage("AP English Lit", "AP") },
+      
+      // Story Books
+      { code: "STORY-01", name: "The Little Prince", author: "Antoine de Saint-Exupéry", category: "Story", status: "Available", description: "A poetic tale about a pilot stranded in the desert who meets a young prince from another planet.", publisher: "Reynal & Hitchcock", isbn: "978-0156012195", grade: 0, image: getBookImage("Little Prince", "Story") },
+      { code: "STORY-02", name: "Charlotte's Web", author: "E.B. White", category: "Story", status: "Available", description: "The classic story of a pig named Wilbur and his friendship with a spider named Charlotte.", publisher: "HarperCollins", isbn: "978-0061124952", grade: 0, image: getBookImage("Charlotte's Web", "Story") },
+      { code: "STORY-03", name: "Harry Potter", author: "J.K. Rowling", category: "Story", status: "Available", description: "A young wizard discovers his magical heritage and attends Hogwarts School of Witchcraft and Wizardry.", publisher: "Bloomsbury", isbn: "978-0747532699", grade: 0, image: getBookImage("Harry Potter", "Story") },
+      { code: "STORY-04", name: "The Hobbit", author: "J.R.R. Tolkien", category: "Story", status: "Available", description: "Bilbo Baggins embarks on an unexpected journey with a group of dwarves to reclaim their homeland.", publisher: "George Allen & Unwin", isbn: "978-0547928227", grade: 0, image: getBookImage("The Hobbit", "Story") },
+      { code: "STORY-05", name: "Matilda", author: "Roald Dahl", category: "Story", status: "Available", description: "A brilliant young girl with telekinetic powers stands up to her neglectful parents and cruel headmistress.", publisher: "Jonathan Cape", isbn: "978-0142410370", grade: 0, image: getBookImage("Matilda", "Story") },
+      
+      // Sci-Fi Books
+      { code: "SCIFI-01", name: "Dune", author: "Frank Herbert", category: "Sci-Fi", status: "Available", description: "Set on the desert planet Arrakis, this epic science fiction tale explores politics, religion, and ecology.", publisher: "Chilton Books", isbn: "978-0441172719", grade: 0, image: getBookImage("Dune", "Sci-Fi") },
+      { code: "SCIFI-02", name: "Ender's Game", author: "Orson Scott Card", category: "Sci-Fi", status: "Available", description: "Young Ender Wiggin is recruited to Battle School to prepare for an alien invasion.", publisher: "Tor Books", isbn: "978-0812550702", grade: 0, image: getBookImage("Ender's Game", "Sci-Fi") },
+      { code: "SCIFI-03", name: "The Martian", author: "Andy Weir", category: "Sci-Fi", status: "Available", description: "Astronaut Mark Watney struggles to survive alone on Mars after being left behind by his crew.", publisher: "Crown Publishing", isbn: "978-0553418026", grade: 0, image: getBookImage("The Martian", "Sci-Fi") },
+      { code: "SCIFI-04", name: "1984", author: "George Orwell", category: "Sci-Fi", status: "Available", description: "A dystopian novel set in a totalitarian society ruled by Big Brother.", publisher: "Secker & Warburg", isbn: "978-0451524935", grade: 0, image: getBookImage("1984", "Sci-Fi") },
+      { code: "SCIFI-05", name: "Ready Player One", author: "Ernest Cline", category: "Sci-Fi", status: "Available", description: "In a virtual reality universe, a teenager searches for an Easter egg that will grant him control of the OASIS.", publisher: "Broadway Books", isbn: "978-0304887436", grade: 0, image: getBookImage("Ready Player One", "Sci-Fi") },
+      
+      // Fiction Books
+      { code: "FICT-01", name: "To Kill a Mockingbird", author: "Harper Lee", category: "Fiction", status: "Available", description: "Through the eyes of young Scout Finch, this novel explores racial injustice in the American South.", publisher: "J.B. Lippincott", isbn: "978-0061120084", grade: 0, image: getBookImage("Mockingbird", "Fiction") },
+      { code: "FICT-02", name: "The Great Gatsby", author: "F. Scott Fitzgerald", category: "Fiction", status: "Available", description: "A portrait of the Jazz Age and the mysterious millionaire Jay Gatsby's obsession with Daisy Buchanan.", publisher: "Charles Scribner's Sons", isbn: "978-0743273565", grade: 0, image: getBookImage("Great Gatsby", "Fiction") },
+      { code: "FICT-03", name: "Pride and Prejudice", author: "Jane Austen", category: "Fiction", status: "Available", description: "The witty story of Elizabeth Bennet and Mr. Darcy navigating love and social expectations.", publisher: "T. Egerton", isbn: "978-0141439518", grade: 0, image: getBookImage("Pride & Prejudice", "Fiction") },
+      { code: "FICT-04", name: "The Catcher in the Rye", author: "J.D. Salinger", category: "Fiction", status: "Available", description: "Holden Caulfield's unforgettable narrative of teenage alienation and loss of innocence.", publisher: "Little, Brown", isbn: "978-0316769488", grade: 0, image: getBookImage("Catcher in the Rye", "Fiction") },
+      { code: "FICT-05", name: "Percy Jackson", author: "Rick Riordan", category: "Fiction", status: "Available", description: "A modern-day demigod discovers his true identity and embarks on quests in the world of Greek mythology.", publisher: "Disney-Hyperion", isbn: "978-0786856299", grade: 0, image: getBookImage("Percy Jackson", "Fiction") },
+      
+      // Non-Fiction Books
+      { code: "NONF-01", name: "A Brief History of Time", author: "Stephen Hawking", category: "Non-Fiction", status: "Available", description: "An accessible exploration of cosmology, from the Big Bang to black holes.", publisher: "Bantam Books", isbn: "978-0553380163", grade: 0, image: getBookImage("Brief History of Time", "Non-Fiction") },
+      { code: "NONF-02", name: "Sapiens", author: "Yuval Noah Harari", category: "Non-Fiction", status: "Available", description: "A brief history of humankind exploring how Homo sapiens came to dominate the world.", publisher: "Harper", isbn: "978-0062316097", grade: 0, image: getBookImage("Sapiens", "Non-Fiction") },
+      { code: "NONF-03", name: "The Diary of a Young Girl", author: "Anne Frank", category: "Non-Fiction", status: "Available", description: "The diary of Anne Frank while hiding from the Nazis in Amsterdam during World War II.", publisher: "Doubleday", isbn: "978-0553296983", grade: 0, image: getBookImage("Anne Frank Diary", "Non-Fiction") },
+      { code: "NONF-04", name: "Steve Jobs", author: "Walter Isaacson", category: "Non-Fiction", status: "Available", description: "The authorized biography of Apple co-founder Steve Jobs based on extensive interviews.", publisher: "Simon & Schuster", isbn: "978-1451648539", grade: 0, image: getBookImage("Steve Jobs", "Non-Fiction") },
+      { code: "NONF-05", name: "Educated", author: "Tara Westover", category: "Non-Fiction", status: "Available", description: "A memoir about a woman who grows up in a survivalist family and eventually earns a PhD from Cambridge.", publisher: "Random House", isbn: "978-0399590504", grade: 0, image: getBookImage("Educated", "Non-Fiction") }
+    ];
+    items = defaultBooks;
+    localStorage.setItem("items", JSON.stringify(items));
+  }
 
   const itemForm = document.getElementById("itemForm");
   const itemList = document.getElementById("itemList");
@@ -1479,9 +1582,12 @@
   const submitBtn = document.getElementById("submitBtn");
 
   // Ensure logged-in user has admin role
-
-// Ensure logged-in user has admin role (handled by Supabase utils)
-
+  const loggedInUser = localStorage.getItem("loggedInUser");
+  if (loggedInUser) {
+    const user = JSON.parse(loggedInUser);
+    user.role = "admin";
+    localStorage.setItem("loggedInUser", JSON.stringify(user));
+  }
 
   let currentRequestIndex = null;
   let currentItemImage = null;
@@ -1499,6 +1605,42 @@
       setTimeout(() => { notification.style.display = 'none'; }, 4000);
     }
   }
+
+  // Reset system - clear all localStorage and reinitialize with default data
+  window.resetSystem = function() {
+    if (confirm("⚠️ Are you sure you want to reset the entire system? This will delete all data!")) {
+      if (confirm("🔴 This action CANNOT be undone. Type YES to confirm:")) {
+        const confirmation = prompt("Type YES to permanently reset the system:");
+        if (confirmation === "YES") {
+          // Clear all localStorage
+          localStorage.clear();
+          
+          // Reinitialize with default books
+          const defaultBooks = [
+            { code: "BK001", name: "The Great Gatsby", author: "F. Scott Fitzgerald", description: "A classic novel by F. Scott Fitzgerald", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0743273567-M.jpg", publisher: "Scribner", publishedDate: "April 10, 1925", isbn: "978-0743273565", pages: 180 },
+            { code: "BK002", name: "To Kill a Mockingbird", author: "Harper Lee", description: "Harper Lee's masterpiece about racial injustice", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0061120081-M.jpg", publisher: "J.B. Lippincott", publishedDate: "July 11, 1960", isbn: "978-0061120084", pages: 324 },
+            { code: "BK003", name: "1984", author: "George Orwell", description: "George Orwell's dystopian novel", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0451524934-M.jpg", publisher: "Secker and Warburg", publishedDate: "June 8, 1949", isbn: "978-0451524935", pages: 328 },
+            { code: "BK004", name: "Pride and Prejudice", author: "Jane Austen", description: "Jane Austen's romantic novel", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0141439513-M.jpg", publisher: "T. Egerton", publishedDate: "January 28, 1813", isbn: "978-0141439518", pages: 432 },
+            { code: "BK005", name: "The Catcher in the Rye", author: "J.D. Salinger", description: "J.D. Salinger's coming-of-age novel", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0316769177-M.jpg", publisher: "Little, Brown", publishedDate: "July 16, 1951", isbn: "978-0316769174", pages: 277 },
+            { code: "BK006", name: "Harry Potter and the Sorcerer's Stone", author: "J.K. Rowling", description: "J.K. Rowling's fantasy adventure", status: "Borrowed", image: "https://covers.openlibrary.org/b/isbn/0439708184-M.jpg", publisher: "Bloomsbury", publishedDate: "June 26, 1997", isbn: "978-0439708180", pages: 309 },
+            { code: "BK007", name: "The Hobbit", author: "J.R.R. Tolkien", description: "J.R.R. Tolkien's fantasy classic", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0547928228-M.jpg", publisher: "Allen and Unwin", publishedDate: "September 21, 1937", isbn: "978-0547928228", pages: 342 },
+            { code: "BK008", name: "Brave New World", author: "Aldous Huxley", description: "Aldous Huxley's science fiction novel", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0060850523-M.jpg", publisher: "Chatto and Windus", publishedDate: "August 30, 1932", isbn: "978-0060850524", pages: 311 },
+            { code: "BK009", name: "The Lord of the Rings", author: "J.R.R. Tolkien", description: "Tolkien's epic fantasy trilogy", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0544003411-M.jpg", publisher: "Allen and Unwin", publishedDate: "July 29, 1954", isbn: "978-0544003415", pages: 1216 },
+            { code: "BK010", name: "Dune", author: "Frank Herbert", description: "Frank Herbert's science fiction epic", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0441172717-M.jpg", publisher: "Chilton Books", publishedDate: "June 1, 1965", isbn: "978-0441172719", pages: 688 },
+            { code: "BK011", name: "The Hunger Games", author: "Suzanne Collins", description: "Suzanne Collins' dystopian series", status: "Available", image: "https://covers.openlibrary.org/b/isbn/0439023521-M.jpg", publisher: "Scholastic Press", publishedDate: "September 14, 2008", isbn: "978-0439023521", pages: 374 },
+            { code: "BK012", name: "Sherlock Holmes Collection", author: "Arthur Conan Doyle", description: "Arthur Conan Doyle's detective stories", status: "Available", image: "https://covers.openlibrary.org/b/isbn/1840224614-M.jpg", publisher: "Penguin Classics", publishedDate: "1892-1927", isbn: "978-1840224610", pages: 1461 }
+          ];
+          
+          localStorage.setItem("items", JSON.stringify(defaultBooks));
+          localStorage.setItem("requests", JSON.stringify([]));
+          localStorage.setItem("users", JSON.stringify([]));
+          
+          alert("✅ System has been reset! You will be redirected to login.");
+          window.location.href = "login.html";
+        }
+      }
+    }
+  };
 
   // Form validation
   function validateForm(name, code) {
@@ -1527,6 +1669,20 @@
 
     return isValid;
   }
+
+  // Safe localStorage operations
+  function saveData() {
+    try {
+      localStorage.setItem("items", JSON.stringify(items));
+      localStorage.setItem("requests", JSON.stringify(requests));
+      return true;
+    } catch (e) {
+      showNotification('Error saving data. Please try again.', 'error');
+      console.error('Storage error:', e);
+      return false;
+    }
+  }
+
   // Handle image file selection
   itemImage.addEventListener("change", e => {
     const file = e.target.files[0];
@@ -2591,7 +2747,7 @@ Last Login: ${user.lastLogin || 'Never logged in'}
     });
   });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/admin.js"></script>
+
 </body>
 </html>

@@ -7,9 +7,14 @@
 // GLOBAL VARIABLES
 // ==========================================
 
-// Current user data - loaded async
-let currentUser = null;
-
+// Current user data
+let currentUser = JSON.parse(localStorage.getItem("loggedInUser")) || {
+  firstName: "Student",
+  lastName: "",
+  email: "student@borrowbuddy.local",
+  phone: "",
+  role: "student"
+};
 
 // ==========================================
 // PROFILE MANAGEMENT
@@ -19,7 +24,7 @@ let currentUser = null;
  * Load and display user profile information
  * Updates all profile sections with current user data
  */
-async function loadProfile() {
+function loadProfile() {
   // Update header information
   document.getElementById("displayName").textContent = currentUser.firstName + " " + currentUser.lastName;
   document.getElementById("displayEmail").textContent = currentUser.email;
@@ -43,16 +48,16 @@ async function loadProfile() {
   document.getElementById("editPhone").value = currentUser.phone || "";
 
   // Load statistics and activity
-  await loadStats();
-  await loadActivity();
+  loadStats();
+  loadActivity();
 }
 
 /**
  * Load and display user statistics
  * Shows total requests, approved requests, pending requests, grade, and section
  */
-async function loadStats() {
-  const requests = await getRequestsAsync();
+function loadStats() {
+  const requests = JSON.parse(localStorage.getItem("requests")) || [];
   const myReq = requests.filter(r => r.studentEmail === currentUser.email);
 
   // Calculate statistics
@@ -63,8 +68,8 @@ async function loadStats() {
   const latestRequest = myReq.sort((a, b) =>
     new Date(b.requestedAt || b.requestDate) - new Date(a.requestedAt || a.requestDate)
   )[0];
-  const grade = latestRequest?.studentGrade || "N/A";
-  const section = latestRequest?.studentSection || "N/A";
+  const grade = latestRequest?.grade || "N/A";
+  const section = latestRequest?.section || "N/A";
 
   // Update stats display
   document.getElementById("statsGrid").innerHTML = `
@@ -80,8 +85,8 @@ async function loadStats() {
  * Load and display user activity
  * Shows a list of all borrow requests with their current status
  */
-async function loadActivity() {
-  const requests = await getRequestsAsync();
+function loadActivity() {
+  const requests = JSON.parse(localStorage.getItem("requests")) || [];
   const myReq = requests.filter(r => r.studentEmail === currentUser.email);
 
   const activityList = document.getElementById("activityList");
@@ -95,29 +100,23 @@ async function loadActivity() {
  * Updates user information and refreshes the display
  * @param {Event} e - Form submit event
  */
-async function saveProfile(e) {
+function saveProfile(e) {
   e.preventDefault();
 
-  const firstName = document.getElementById("editFirst").value;
-  const lastName = document.getElementById("editLast").value;
-  const phone = document.getElementById("editPhone").value;
+  // Update current user data
+  currentUser.firstName = document.getElementById("editFirst").value;
+  currentUser.lastName = document.getElementById("editLast").value;
+  currentUser.phone = document.getElementById("editPhone").value;
 
-  const profileData = {
-    firstName,
-    lastName,
-    phone,
-    updated_at: new Date().toISOString()
-  };
+  // Save to localStorage
+  localStorage.setItem("loggedInUser", JSON.stringify(currentUser));
 
-  const success = await window.saveProfileAsync(profileData);
-  if (success) {
-    currentUser.firstName = firstName;
-    currentUser.lastName = lastName;
-    currentUser.phone = phone;
-    await loadProfile();
-  }
+  // Refresh profile display
+  loadProfile();
+
+  // Show success message
+  alert("Profile updated!");
 }
-
 
 // ==========================================
 // NAVIGATION
@@ -151,20 +150,13 @@ function goBack() {
  * Logout user and redirect to login page
  */
 function logout() {
-  window.logout();
+  localStorage.removeItem("loggedInUser");
+  window.location.href = "login.html";
 }
-
 
 // ==========================================
 // INITIALIZATION
 // ==========================================
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await initSupabase();
-  currentUser = await window.getCurrentUser();
-  if (!currentUser) {
-    window.location.href = 'login.html';
-    return;
-  }
-  await loadProfile();
-});
+// Load profile data when script loads
+loadProfile();

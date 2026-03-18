@@ -4,17 +4,16 @@
 // - Guards against missing modal on student pages
 // ===============================
 
-// Load requests from Supabase
-let requests = []; // Will be populated by initSupabase() callers
+if (typeof requests === 'undefined' || !Array.isArray(requests)) {
+  window.requests = [
+    { item: "Python Book", code: "BK001", status: "Pending", dueDate: "", approvedDate: "", student: "Juan Dela Cruz" },
+    { item: "Arduino Kit", code: "EQ004", status: "Pending", dueDate: "", approvedDate: "", student: "Maria Santos" }
+  ];
+}
 
 const myRequestsEl = document.getElementById("myRequests");
 
-async function loadStudentRequests() {
-  requests = await getRequestsAsync();
-  renderRequests();
-}
-
-async function renderRequests() {
+function renderRequests() {
   if (!myRequestsEl) {
     console.warn('myRequests container not found; skipping renderRequests.');
     return;
@@ -36,7 +35,7 @@ async function renderRequests() {
   });
 }
 
-await loadStudentRequests();
+renderRequests();
 
 // Modal elements (may be absent on student pages)
 const modal = document.getElementById("approvalModal");
@@ -76,36 +75,32 @@ if (closeModal) closeModal.onclick = () => { if (modal) modal.style.display = 'n
 window.addEventListener('click', (event) => { if (modal && event.target === modal) modal.style.display = 'none'; });
 
 if (approvalForm) {
-  approvalForm.addEventListener('submit', async (e) => {
+  approvalForm.addEventListener('submit', (e) => {
     e.preventDefault();
     if (currentIndex === null) return;
     const dueDateVal = document.getElementById('dueDate')?.value;
     if (!dueDateVal) { alert('Please select a due date before approving.'); return; }
 
-    await updateRequestAsync(requests[currentIndex].id, {
-      status: 'Approved',
-      dueDate: dueDateVal,
-      approvedAt: new Date().toISOString()
-    });
+    requests[currentIndex].status = 'Approved';
+    requests[currentIndex].dueDate = dueDateVal;
+    requests[currentIndex].approvedDate = new Date().toLocaleString();
 
-    showNotification('✅ Request Approved!', 'success');
+    try { localStorage.setItem('requests', JSON.stringify(requests)); } catch (e) { console.error('Could not save requests', e); }
+
     renderRequests();
     if (modal) modal.style.display = 'none';
-
+    alert('✅ Borrow Request Approved!');
   });
 }
 
 if (rejectRequestBtn) {
-  rejectRequestBtn.addEventListener('click', async () => {
+  rejectRequestBtn.addEventListener('click', () => {
     if (currentIndex === null) return;
-    await updateRequestAsync(requests[currentIndex].id, {
-      status: 'Rejected',
-      rejectedAt: new Date().toISOString()
-    });
-
-    showNotification('❌ Request Rejected', 'warning');
+    requests[currentIndex].status = 'Rejected';
+    requests[currentIndex].approvedDate = new Date().toLocaleString();
+    try { localStorage.setItem('requests', JSON.stringify(requests)); } catch (e) { console.error('Could not save requests', e); }
     renderRequests();
     if (modal) modal.style.display = 'none';
-
+    alert('❌ Request Rejected.');
   });
 }

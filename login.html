@@ -37,6 +37,17 @@
 
     <p class="demo-note">Don't have an account? <a href="signup.html">Sign up</a></p>
     <p class="demo-note">Forgot password? <a href="forgot-password.html">Reset here</a></p>
+    <button type="button" onclick="showDebugInfo()" style="width: 100%; padding: 8px; margin-top: 12px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: #666;">
+      🔍 View Registered Users (Debug)
+    </button>
+    <div style="margin-top: 20px; padding: 12px; background: #f0f4ff; border-radius: 8px; font-size: 0.9rem; color: #666;">
+      <strong>💡 Troubleshooting:</strong><br>
+      • Make sure you select the correct role (Student/Admin)<br>
+      • You can log in with either username or email<br>
+      • Password and username are case-sensitive<br>
+      • Click "View Registered Users" to see all accounts<br>
+      • Quick access: admin/admin or student/student
+    </div>
   </div>
 
 <script>
@@ -88,7 +99,7 @@
   };
 
   // === LOGIN FUNCTION ===
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const username = document.getElementById("username").value.trim();
@@ -99,37 +110,49 @@
       return;
     }
 
-    await window.initSupabase();
+    // Load users from local storage
+    const users = JSON.parse(localStorage.getItem("users")) || [];
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: username,
-        password: password
-      });
+    // Check for Quick Access demo logins
+    if (username === "admin" && password === "admin" && currentRole === "admin") {
+      alert("Welcome Admin (Quick Access)!");
+      localStorage.setItem("loggedInUser", JSON.stringify({ username: "admin", email: "admin@demo.com", role: "admin", firstName: "Demo", lastName: "Admin" }));
+      window.location.href = "admin.html";
+      return;
+    }
 
-      if (error) {
-        alert(`Login failed: ${error.message}`);
+    if (username === "student" && password === "student" && currentRole === "student") {
+      alert("Welcome Student (Quick Access)!");
+      localStorage.setItem("loggedInUser", JSON.stringify({ username: "student", email: "student@demo.com", role: "student", firstName: "Demo", lastName: "Student" }));
+      window.location.href = "student.html";
+      return;
+    }
+
+    // Check local storage accounts - username or email with password and role
+    const user = users.find(
+      (u) => (u.username === username || u.email === username) && u.password === password && u.role === currentRole
+    );
+
+    if (user) {
+      // Check if user account is disabled
+      if (user.isActive === false) {
+        alert("Your account has been disabled by the administrator. Please contact the admin.");
         return;
       }
 
-      // Create/update profile
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
-        email: username,
-        role: currentRole,
-        firstName: data.user.email.split('@')[0], // fallback
-        updated_at: new Date().toISOString()
-      });
+      // Update last login time
+      user.lastLogin = new Date().toLocaleString();
+      localStorage.setItem("users", JSON.stringify(users));
 
-      showNotification('Login successful!', 'success');
-      
-      if (currentRole === "admin") {
+      alert(`Welcome ${user.firstName}!`);
+      localStorage.setItem("loggedInUser", JSON.stringify(user));
+      if (user.role === "admin") {
         window.location.href = "admin.html";
       } else {
         window.location.href = "student.html";
       }
-    } catch (e) {
-      alert('Login error: ' + e.message);
+    } else {
+      alert("Invalid credentials or role. Please try again.");
     }
   });
 </script>
