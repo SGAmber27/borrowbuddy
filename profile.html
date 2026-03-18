@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Borrow Buddy | Student Profile</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet" href="css/mobile.css">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  min-height: 100vh;
+}
+
+.profile-container {
+  max-width: 1050px;
+  margin: 30px auto;
+  padding: 20px;
+}
+
+/* HEADER */
+.header-nav {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.btn-back, .logout-btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.btn-back { background: #007bff; color: white; }
+.logout-btn { background: #dc3545; color: white; }
+
+/* PROFILE HEADER */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  padding: 30px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 18px;
+  color: white;
+  margin-bottom: 30px;
+}
+
+.profile-avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 45px;
+  flex-shrink: 0;
+}
+
+.profile-info h2 { font-size: 26px; }
+
+/* TABS */
+.profile-tabs {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 25px;
+}
+
+.profile-tab {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.profile-tab.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+/* SECTIONS */
+.profile-section { display: none; }
+.profile-section.active { display: block; }
+
+/* CARD */
+.profile-card {
+  background: white;
+  padding: 25px;
+  border-radius: 14px;
+  margin-bottom: 25px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.profile-card h3 { margin-bottom: 15px; }
+
+/* INFO GRID */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.info-item {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.info-label {
+  font-size: 12px;
+  color: #999;
+}
+
+.info-value {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* STATS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.stat-card h2 { font-size: 28px; }
+
+/* FORMS */
+.edit-form label {
+  font-weight: 600;
+  display: block;
+  margin-top: 15px;
+}
+
+.edit-form input, .edit-form select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.save-btn, .cancel-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.save-btn { background: #28a745; color: white; }
+.cancel-btn { background: #6c757d; color: white; }
+
+/* Activity List */
+#activityList p {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 15px;
+    margin: 15px auto;
+  }
+  
+  .header-nav {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .header-nav h1 {
+    grid-column: 1 / -1;
+    order: -1;
+    font-size: 1.3rem;
+  }
+  
+  .btn-back, .logout-btn {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    justify-content: center;
+  }
+  
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 25px 20px;
+  }
+  
+  .profile-avatar {
+    width: 90px;
+    height: 90px;
+    font-size: 35px;
+  }
+  
+  .profile-info h2 {
+    font-size: 1.4rem;
+  }
+  
+  .profile-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .profile-tab {
+    flex: 1 1 100%;
+    padding: 12px 8px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .profile-card {
+    padding: 20px;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .stat-card {
+    padding: 15px;
+  }
+  
+  .stat-card h2 {
+    font-size: 1.5rem;
+  }
+  
+  .stat-card p {
+    font-size: 0.85rem;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+  }
+  
+  .save-btn, .cancel-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 10px;
+    margin: 10px auto;
+  }
+  
+  .header-nav {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .header-nav h1 {
+    font-size: 1.2rem;
+  }
+  
+  .btn-back, .logout-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+  
+  .profile-header {
+    padding: 20px 15px;
+    border-radius: 12px;
+  }
+  
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 30px;
+  }
+  
+  .profile-info h2 {
+    font-size: 1.2rem;
+  }
+  
+  .profile-info p {
+    font-size: 0.9rem;
+  }
+  
+  .profile-tab {
+    font-size: 0.8rem;
+    padding: 10px 5px;
+  }
+  
+  .profile-card {
+    padding: 15px;
+    border-radius: 10px;
+  }
+  
+  .profile-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+  
+  .info-item {
+    padding: 12px;
+  }
+  
+  .info-value {
+    font-size: 1rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .stat-card {
+    padding: 12px;
+  }
+  
+  .stat-card h2 {
+    font-size: 1.3rem;
+  }
+  
+  .edit-form input, .edit-form select {
+    padding: 12px 10px;
+    font-size: 16px;
+  }
+  
+  .save-btn, .cancel-btn {
+    padding: 14px 10px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .profile-header {
+    padding: 15px 10px;
+  }
+  
+  .profile-avatar {
+    width: 70px;
+    height: 70px;
+    font-size: 26px;
+  }
+  
+  .profile-info h2 {
+    font-size: 1.1rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    padding: 15px;
+  }
+  
+  .stat-card h2 {
+    font-size: 1.5rem;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="profile-container">
+
+  <!-- HEADER -->
+  <div class="header-nav">
+    <button class="btn-back" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+    <h1>My Profile</h1>
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="profile-avatar"><i class="fas fa-user"></i></div>
+    <div class="profile-info">
+      <h2 id="displayName"></h2>
+      <p id="displayEmail"></p>
+      <p>Student</p>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="profile-tabs">
+    <button class="profile-tab active" onclick="switchTab('overview', this)">Overview</button>
+    <button class="profile-tab" onclick="switchTab('edit', this)">Edit</button>
+    <button class="profile-tab" onclick="switchTab('activity', this)">Activity</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="overview" class="profile-section active">
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="profile-card">
+      <h3>Account Information</h3>
+      <div class="info-grid" id="accountInfo"></div>
+    </div>
+  </div>
+
+  <!-- EDIT -->
+  <div id="edit" class="profile-section">
+    <div class="profile-card">
+      <h3>Edit Profile</h3>
+      <form class="edit-form" onsubmit="saveProfile(event)">
+        <label>First Name</label>
+        <input type="text" id="editFirst" required>
+
+        <label>Last Name</label>
+        <input type="text" id="editLast" required>
+
+        <label>Email</label>
+        <input type="email" id="editEmail" readonly>
+
+        <label>Phone</label>
+        <input type="text" id="editPhone">
+
+        <div class="form-buttons">
+          <button class="save-btn">Save</button>
+          <button type="button" class="cancel-btn" onclick="loadProfile()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ACTIVITY -->
+  <div id="activity" class="profile-section">
+    <div class="profile-card">
+      <h3>Borrow Activity</h3>
+      <div id="activityList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentUser = JSON.parse(localStorage.getItem("loggedInUser")) || {
+  firstName: "Student",
+  lastName: "",
+  email: "student@borrowbuddy.local",
+  phone: "",
+  role: "student"
+};
+
+function loadProfile() {
+  displayName.textContent = currentUser.firstName + " " + currentUser.lastName;
+  displayEmail.textContent = currentUser.email;
+
+  accountInfo.innerHTML = `
+    <div class="info-item"><div class="info-label">Email</div><div class="info-value">${currentUser.email}</div></div>
+    <div class="info-item"><div class="info-label">Phone</div><div class="info-value">${currentUser.phone || "N/A"}</div></div>
+  `;
+
+  editFirst.value = currentUser.firstName;
+  editLast.value = currentUser.lastName;
+  editEmail.value = currentUser.email;
+  editPhone.value = currentUser.phone || "";
+
+  loadStats();
+  loadActivity();
+}
+
+function loadStats() {
+  const requests = JSON.parse(localStorage.getItem("requests")) || [];
+  const myReq = requests.filter(r => r.studentEmail === currentUser.email);
+
+  const approved = myReq.filter(r => r.status === "Approved").length;
+  const pending = myReq.filter(r => r.status === "Pending").length;
+
+  // Get latest grade and section from requests
+  const latestRequest = myReq.sort((a, b) => new Date(b.requestedAt || b.requestDate) - new Date(a.requestedAt || a.requestDate))[0];
+  const grade = latestRequest?.grade || "N/A";
+  const section = latestRequest?.section || "N/A";
+
+  statsGrid.innerHTML = `
+    <div class="stat-card"><h2>${myReq.length}</h2><p>Total Requests</p></div>
+    <div class="stat-card"><h2>${approved}</h2><p>Approved</p></div>
+    <div class="stat-card"><h2>${pending}</h2><p>Pending</p></div>
+    <div class="stat-card"><h2>${grade}</h2><p>Grade</p></div>
+    <div class="stat-card"><h2>${section}</h2><p>Section</p></div>
+  `;
+}
+
+function loadActivity() {
+  const requests = JSON.parse(localStorage.getItem("requests")) || [];
+  const myReq = requests.filter(r => r.studentEmail === currentUser.email);
+
+  activityList.innerHTML = myReq.length
+    ? myReq.map(r => `<p>📦 ${r.itemName} — <b>${r.status}</b></p>`).join("")
+    : "<p>No activity yet.</p>";
+}
+
+function saveProfile(e) {
+  e.preventDefault();
+  currentUser.firstName = editFirst.value;
+  currentUser.lastName = editLast.value;
+  currentUser.phone = editPhone.value;
+
+  localStorage.setItem("loggedInUser", JSON.stringify(currentUser));
+  loadProfile();
+  alert("Profile updated!");
+}
+
+function switchTab(id, el) {
+  document.querySelectorAll(".profile-section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".profile-tab").forEach(t => t.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  el.classList.add("active");
+}
+
+function goBack() { window.location.href = "student.html"; }
+function logout() {
+  localStorage.removeItem("loggedInUser");
+  window.location.href = "login.html";
+}
+
+loadProfile();
+</script>
+
+</body>
+</html>
