@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Borrow Buddy | Sign Up</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/login.css" />
+  <link rel="stylesheet" href="css/mobile.css" />
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="role-toggle">
+      <button id="studentBtn" class="active"><i class="fas fa-user"></i> Student</button>
+      <button id="adminBtn"><i class="fas fa-shield-alt"></i> Admin</button>
+    </div>
+
+    <form id="signupForm">
+      <label for="firstName">First Name</label>
+      <div class="input-box">
+        <i class="fas fa-user"></i>
+        <input type="text" id="firstName" placeholder="Enter your first name" required />
+      </div>
+
+      <label for="lastName">Last Name</label>
+      <div class="input-box">
+        <i class="fas fa-user"></i>
+        <input type="text" id="lastName" placeholder="Enter your last name" required />
+      </div>
+
+      <label for="email">Email</label>
+      <div class="input-box">
+        <i class="fas fa-envelope"></i>
+        <input type="email" id="email" placeholder="example@snnhs.edu.ph" required />
+      </div>
+
+      <label for="phone">Phone Number (Optional)</label>
+      <div class="input-box">
+        <i class="fas fa-phone"></i>
+        <input type="tel" id="phone" placeholder="Your phone number" />
+      </div>
+
+      <label for="password">Password</label>
+      <div class="input-box">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="password" placeholder="Create a password" required />
+      </div>
+
+      <button type="submit" class="login-btn">
+        <i class="fas fa-user-plus"></i> Sign Up as <span id="userType">Student</span>
+      </button>
+    </form>
+
+
+  </div>
+
+  <script>
+  const studentBtn = document.getElementById("studentBtn");
+  const adminBtn = document.getElementById("adminBtn");
+  const userType = document.getElementById("userType");
+  const form = document.getElementById("signupForm");
+
+  // Default role
+  let currentRole = "student";
+
+  // === SLIDER BUTTONS ===
+  studentBtn.addEventListener("click", () => {
+    studentBtn.classList.add("active");
+    adminBtn.classList.remove("active");
+    currentRole = "student";
+    userType.textContent = "Student";
+  });
+
+  adminBtn.addEventListener("click", () => {
+    adminBtn.classList.add("active");
+    studentBtn.classList.remove("active");
+    currentRole = "admin";
+    userType.textContent = "Admin";
+  });
+
+  // === SIGN UP FUNCTION ===
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const username = firstName + " " + lastName; // Use full name as username for login
+    const phone = document.getElementById("phone").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!firstName || !lastName || !email || !password) {
+      alert("Please fill out all required fields!");
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 4) {
+      alert("Password must be at least 4 characters long!");
+      return;
+    }
+
+await window.initSupabase();
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            firstName,
+            lastName,
+            phone: phone || null,
+            role: currentRole
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      // Upsert profile
+      await supabase.from('profiles').upsert({
+        id: data.user.id,
+        firstName,
+        lastName,
+        email,
+        phone: phone || null,
+        role: currentRole,
+        updated_at: new Date().toISOString()
+      });
+
+      showNotification('Account created! Check your email to verify.', 'success');
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2000);
+    } catch (error) {
+      alert(`Signup failed: ${error.message}`);
+    }
+  });
+</script>
+
+</body>
+</html>
+    
